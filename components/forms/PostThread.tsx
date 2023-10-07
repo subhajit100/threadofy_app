@@ -23,6 +23,7 @@ import { updateUser } from "@/lib/actions/user.actions";
 import { usePathname, useRouter } from "next/navigation";
 import { ThreadValidation } from "@/lib/validations/thread";
 import { createThread } from "@/lib/actions/thread.actions";
+import { useOrganization } from "@clerk/nextjs";
 
 interface PostThreadProps {
   userId: string;
@@ -31,6 +32,7 @@ interface PostThreadProps {
 const PostThread = ({ userId }: PostThreadProps) => {
   const pathname = usePathname();
   const router = useRouter();
+  const { organization } = useOrganization();
   const form = useForm<z.infer<typeof ThreadValidation>>({
     resolver: zodResolver(ThreadValidation),
     defaultValues: {
@@ -44,7 +46,7 @@ const PostThread = ({ userId }: PostThreadProps) => {
     await createThread({
       text: values.thread,
       author: userId,
-      communityId: null,
+      communityId: organization ? organization.id : null,
       path: pathname,
     });
 

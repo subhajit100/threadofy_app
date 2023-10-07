@@ -5,6 +5,7 @@ import User from "../models/user.model";
 import connectToDB from "../mongoose";
 import Thread from "../models/thread.model";
 import { FilterQuery, SortOrder } from "mongoose";
+import Community from "../models/community.model";
 
 interface UpdateUserParams {
   userId: string;
@@ -47,8 +48,10 @@ export async function updateUser({
 export async function fetchUser(userId: string) {
   try {
     await connectToDB();
-    const user = await User.findOne({ id: userId });
-    // .populate({path: 'communities', model: Community})
+    const user = await User.findOne({ id: userId }).populate({
+      path: "communities",
+      model: Community,
+    });
     return user;
   } catch (err: any) {
     console.log(`Failed to fetch user ${err.message}`);
@@ -64,6 +67,11 @@ export async function fetchUserThreads(userId: string) {
       path: "threads",
       model: Thread,
       populate: [
+        {
+          path: "community",
+          model: Community,
+          select: "name id image _id",
+        },
         {
           path: "children",
           model: Thread,
@@ -91,6 +99,7 @@ interface FetchUsersProps {
   sortBy?: SortOrder;
 }
 
+// Almost similar to Thread (search + pagination) and Community (search + pagination)
 export async function fetchusers({
   userId,
   searchString = "",
